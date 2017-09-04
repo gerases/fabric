@@ -33,6 +33,7 @@ if sys.version_info[:2] < (2, 6):
 else:
     install_requires=['paramiko>=1.10,<3.0']
 
+install_requires.append('tqdm')
 
 setup(
     name='Fabric',
