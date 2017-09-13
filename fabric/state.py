@@ -169,6 +169,14 @@ env_options = [
         help="comma-separated list of hosts to operate on"
     ),
 
+    make_option('--hosts-file',
+        action='append',
+        dest='hosts_filename',
+        metavar='FILENAME',
+        default=None,
+        help="Name of a file containing the hostnames. May be repeated."
+    ),
+
     make_option('-i',
         action='append',
         dest='key_filename',

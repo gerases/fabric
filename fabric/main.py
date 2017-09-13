@@ -288,6 +288,7 @@ def parse_options():
         action='store_true',
         default=False
     )
+
     # Display info about a specific command
     parser.add_option('-d', '--display',
         metavar='NAME',
@@ -633,6 +634,25 @@ def main(fabfile_locations=None):
         # post-parsing, since so many things hinge on the values in env.
         for option in env_options:
             state.env[option.dest] = getattr(options, option.dest)
+
+        # See if one or more host files was supplied. If so, append
+        # their contents to the hosts specified with -H/--hosts.
+        if (state.env['hosts_filename']):
+            for hosts_file in state.env['hosts_filename']:
+                try:
+                    if (state.output['debug']):
+                        print "Using %s as the source for the hosts" % state.env['hosts']
+                    with open(hosts_file) as f:
+                        hosts = ','.join(f.read().splitlines())
+                        # If the hosts env var is not empty,
+                        # append the host string after a comma
+                        if (state.env['hosts']):
+                            state.env['hosts'] += ',' + hosts
+                        else:
+                            state.env['hosts'] = hosts
+                except Exception as e:
+                    print "Can't open %s. %s" % (hosts_file, e)
+                    sys.exit(1)
 
         # Handle --hosts, --roles, --exclude-hosts (comma separated string =>
         # list)
