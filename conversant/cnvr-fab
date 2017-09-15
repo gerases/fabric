@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+cd ~/proj/misc/fabfiles
+fab $@
+
+# vim: ft=sh:
