@@ -1,6 +1,100 @@
 #!/usr/bin/env sh
 
+# DESCRIPTION:
+# ============
+#
+# This is a wrapper script for the native fab command. It performs the following useful functions:
+#
+# Firstly, allows one to specify a space separated list of hosts instead of having to go through the girations of generated a
+# comma separated list of hosts. Thus, one can specify the hosts using the brace expansion without having to replace the
+# spaces with commas in the result.
+#
+# Secondly, it becomes the target of a bash completion script that knows where to find the conversant fabric tasks.
+#
+# ARGUMENTS:
+# ==========
+# All native fab arguments are supported and will be passed to fab.
+#
+# These environmental variables can be used:
+#   * "DEBUG" to print extra information.
+#   * "DRY-RUN" to see how the native fab command would be invoked without invoking it.
+
+# ----------------------------------------------------------------------------
+# Replace spaces with commas in the hosts given with the -H/--hosts parameter
+# ----------------------------------------------------------------------------
+
+function debug() {
+  if [[ -z "$DEBUG" || "$DEBUG" == 0 ]]; then
+    return
+  fi
+
+  echo "DEBUG: $@"
+}
+
+index=1
+total_args=${#@}
+debug total_args=$total_args
+
+collecting_hosts=0
+hosts=()
+args_out=()
+while [[ $index -le $total_args ]]; do
+  arg=${!index}
+
+  if [[ $arg =~ ^(-H|--hosts) ]]; then
+    debug "Host collect triggered at arg_index=$index"
+    collecting_hosts=1
+    args_out+=($arg)
+    index=$((index+1))
+    arg=${!index}
+  else
+    if [[ $collecting_hosts == 1 ]]; then
+      # If this is the beginning of another option
+      # we are done with collecting the hosts
+      if [[ $arg =~ ^- ]]; then
+        debug index=$index
+        if [[ $arg =~ ^- ]]; then
+          debug Done collecting hosts
+          hosts_csv=`echo ${hosts[@]} | tr ' ' ','`
+          args_out+=($hosts_csv)
+          collecting_hosts=0
+          hosts=()
+        fi
+      fi
+    fi
+  fi
+
+  if [[ $collecting_hosts == 1 ]]; then
+    debug "Adding $arg to hosts..."
+    hosts+=($arg)
+    shift
+    total_args=$((total_args - 1))
+
+    if [[ $index -gt $total_args ]]; then
+      debug "At last arg=$arg (index=$index >= total_args=$total_args)"
+      hosts_csv=`echo ${hosts[@]} | tr ' ' ','`
+      args_out+=($hosts_csv)
+      break
+    fi
+
+    continue
+  fi
+
+  args_out+=($arg)
+  index=$((index + 1))
+done
+
+if [[ "$DRY_RUN" == "1" ]]; then
+  echo "Would have executed: ${args_out[*]}"
+  exit 0
+fi
+
+# -------------------------------------------------------------------------
+# cd to the conversant fab task library and execute fab with the given args
+# -------------------------------------------------------------------------
+
 cd ~/proj/misc/fabfiles
+set -- ${args_out[*]}
 fab $@
 
 # vim: ft=sh:
