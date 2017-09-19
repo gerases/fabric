@@ -23,6 +23,8 @@
 # Replace spaces with commas in the hosts given with the -H/--hosts parameter
 # ----------------------------------------------------------------------------
 
+FAB_RECIPIES_DIR=~/proj/misc/fabfiles
+
 function debug() {
   if [[ -z "$DEBUG" || "$DEBUG" == 0 ]]; then
     return
@@ -92,6 +94,12 @@ fi
 # -------------------------------------------------------------------------
 # cd to the conversant fab task library and execute fab with the given args
 # -------------------------------------------------------------------------
+
+if [[ ! -d $FAB_RECIPIES_DIR ]]; then
+  echo "$FAB_RECIPIES_DIR doesn't exist!"
+  echo "Please checkout the cnvr fab task repo into that location and retry."
+  exit 1
+fi
 
 cd ~/proj/misc/fabfiles
 set -- ${args_out[*]}

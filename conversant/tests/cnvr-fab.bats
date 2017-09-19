@@ -1,8 +1,11 @@
 #!/usr/bin/env bats
 
-# DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+#
+# IMPORTANT: this script needs to be run
+# from the directory in which it is located.
+#
+
 CNVR_FAB='../cnvr-fab'
-# result=`DRY_RUN=1 DEBUG=0 $CNVR_FAB -H`
 
 prefix="Would have executed"
 @test "with no hosts" {
